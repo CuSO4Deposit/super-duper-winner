@@ -1,0 +1,25 @@
+---
+import QuoteList from "../components/QuoteList.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getAllQuotes, groupQuotesByDay } from "../lib/quotes";
+
+const quotes = await getAllQuotes();
+const groups = groupQuotesByDay(quotes);
+---
+
+<BaseLayout title="Quotations">
+  <div class="page-shell">
+    <SiteHeader />
+
+    <section class="intro" aria-labelledby="homepage-title">
+      <h1 class="intro-title" id="homepage-title">Recent quotations</h1>
+      <p class="intro-copy">
+        A quiet archive of remembered lines, grouped day by day with the
+        newest first.
+      </p>
+    </section>
+
+    <QuoteList groups={groups} />
+  </div>
+</BaseLayout>

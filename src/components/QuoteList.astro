@@ -1,0 +1,29 @@
+---
+import type { QuoteGroup } from "../lib/quotes";
+
+import QuoteItem from "./QuoteItem.astro";
+
+type Props = {
+  groups: QuoteGroup[];
+};
+
+const { groups }: Props = Astro.props;
+---
+
+<div class="quote-groups">
+  {groups.map((group) => (
+    <section class="quote-group" aria-labelledby={`quote-group-${group.key}`}>
+      <h2 class="group-heading" id={`quote-group-${group.key}`}>
+        {group.label}
+      </h2>
+
+      <ul class="group-items">
+        {group.quotes.map((quote) => (
+          <li class="group-item">
+            <QuoteItem quote={quote} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+</div>
