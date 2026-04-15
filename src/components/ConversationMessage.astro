@@ -1,0 +1,37 @@
+---
+import type { ConversationMessageRecord } from "../lib/conversations";
+
+import SpeakerAvatar from "./SpeakerAvatar.astro";
+
+type Props = {
+  message: ConversationMessageRecord;
+};
+
+const { message }: Props = Astro.props;
+const isRight = message.speaker.variant === "right";
+---
+
+<li
+  class:list={[
+    "conversation-message",
+    isRight ? "conversation-message-right" : "conversation-message-left",
+    message.featured && "conversation-message-featured",
+  ]}
+>
+  <div class="conversation-message-avatar">
+    <SpeakerAvatar src={message.speaker.avatar} alt={message.speaker.name} />
+  </div>
+
+  <article class="conversation-bubble">
+    <header class="conversation-message-header">
+      <span class="conversation-speaker">{message.speaker.name}</span>
+      {message.featured && <span class="conversation-featured-flag">Featured</span>}
+    </header>
+
+    <p class="conversation-message-text">{message.text}</p>
+
+    <time class="conversation-message-time" datetime={message.time}>
+      {message.renderedTime}
+    </time>
+  </article>
+</li>

@@ -1,0 +1,50 @@
+---
+import {
+  getTagPath,
+  type ConversationThreadRecord,
+} from "../lib/conversations";
+
+import ConversationMessage from "./ConversationMessage.astro";
+
+type Props = {
+  conversation: ConversationThreadRecord;
+};
+
+const { conversation }: Props = Astro.props;
+---
+
+<article class="conversation-thread">
+  <header class="thread-header">
+    <div class="thread-header-copy">
+      <p class="thread-kicker">Conversation</p>
+      <h1 class="thread-title">{conversation.featuredMessage.text}</h1>
+      <p class="thread-subtitle">
+        <time datetime={conversation.featuredMessage.time}>
+          {conversation.featuredMessage.renderedTime}
+        </time>
+        <span aria-hidden="true">·</span>
+        <span>{conversation.source}</span>
+      </p>
+    </div>
+
+    {
+      conversation.tags.length > 0 && (
+        <ul class="tag-list" aria-label="Conversation tags">
+          {conversation.tags.map((tag) => (
+            <li>
+              <a class="tag-link" href={getTagPath(tag)}>
+                #{tag}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </header>
+
+  <ol class="conversation-thread-list">
+    {conversation.messages.map((message) => (
+      <ConversationMessage message={message} />
+    ))}
+  </ol>
+</article>

@@ -1,0 +1,9 @@
+lin:
+  name: Lin
+  avatar: /avatars/lin.svg
+  variant: left
+
+aya:
+  name: Aya
+  avatar: /avatars/aya.svg
+  variant: right

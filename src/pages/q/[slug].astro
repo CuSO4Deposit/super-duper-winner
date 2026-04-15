@@ -1,52 +1,46 @@
 ---
-import QuoteMeta from "../../components/QuoteMeta.astro";
+import ConversationThread from "../../components/ConversationThread.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
-  getAllQuotes,
+  getAllFeaturedConversations,
+  getConversationBySlug,
   getHomePath,
-  type QuoteRecord,
-} from "../../lib/quotes";
-
-type Props = {
-  quote: QuoteRecord;
-};
+  type ConversationThreadRecord,
+} from "../../lib/conversations";
 
 export async function getStaticPaths() {
-  const quotes = await getAllQuotes();
+  const conversations = await getAllFeaturedConversations();
 
-  return quotes.map((quote) => ({
-    params: { slug: quote.slug },
-    props: { quote },
+  return conversations.map((conversation) => ({
+    params: { slug: conversation.slug },
   }));
 }
 
-const { quote }: Props = Astro.props;
-const pageTitle = `${quote.speaker} | Quotations`;
+const slug = Astro.params.slug;
+
+if (!slug) {
+  throw new Error("Missing conversation slug.");
+}
+
+const conversation = await getConversationBySlug(slug);
+
+if (!conversation) {
+  throw new Error(`Unknown conversation slug: ${slug}`);
+}
+
+const typedConversation: ConversationThreadRecord = conversation;
+const pageTitle = `${typedConversation.featuredMessage.speaker.name} | Quotations`;
 ---
 
 <BaseLayout title={pageTitle}>
   <div class="page-shell page-shell-detail detail-page">
     <SiteHeader />
 
-    <article class="detail-article">
-      <h1 class="detail-title">Quote from {quote.speaker}</h1>
+    <ConversationThread conversation={typedConversation} />
 
-      <blockquote class="detail-body">
-        <p>{quote.body}</p>
-      </blockquote>
-
-      <QuoteMeta
-        time={quote.time}
-        renderedTime={quote.renderedTime}
-        speaker={quote.speaker}
-        source={quote.source}
-        tags={quote.tags}
-      />
-
-      <p class="detail-back">
-        <a href={getHomePath()}>Back to archive</a>
-      </p>
-    </article>
+    <p class="detail-back">
+      <a href={getHomePath()}>Back to archive</a>
+    </p>
   </div>
 </BaseLayout>

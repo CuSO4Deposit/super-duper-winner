@@ -3,14 +3,13 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-const QUOTES_DIR = fileURLToPath(
-  new URL("../src/content/quotes/", import.meta.url),
-);
+const CONTENT_DIR = fileURLToPath(new URL("../src/content/", import.meta.url));
+const CONVERSATIONS_DIR = path.join(CONTENT_DIR, "conversations");
+const SPEAKERS_DIR = path.join(CONTENT_DIR, "speakers");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MINUTE_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
-const QUOTE_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const REQUIRED_FIELDS = ["slug", "time", "timePrecision", "speaker", "source", "tags"];
+const STABLE_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function stripInlineComment(rawValue) {
   let quoteCharacter;
@@ -40,6 +39,14 @@ function stripInlineComment(rawValue) {
 function parseScalar(rawValue) {
   const value = stripInlineComment(rawValue).trim();
 
+  if (value === "true") {
+    return true;
+  }
+
+  if (value === "false") {
+    return false;
+  }
+
   if (
     (value.startsWith('"') && value.endsWith('"')) ||
     (value.startsWith("'") && value.endsWith("'"))
@@ -50,49 +57,94 @@ function parseScalar(rawValue) {
   return value;
 }
 
-function parseQuoteFile(source, fileLabel) {
-  const normalizedSource = source.replaceAll("\r\n", "\n");
-  const lines = normalizedSource.split("\n");
+function parseKeyValueLine(line, fileLabel) {
+  const match = /^(\s*)([A-Za-z][A-Za-z0-9_-]*):(.*)$/.exec(line);
 
-  if (lines[0] !== "---") {
-    throw new Error(`${fileLabel}: missing opening frontmatter fence`);
+  if (!match) {
+    throw new Error(`${fileLabel}: invalid line "${line}"`);
   }
 
-  const closingIndex = lines.indexOf("---", 1);
+  return {
+    indent: match[1].length,
+    key: match[2],
+    rawValue: match[3],
+  };
+}
 
-  if (closingIndex === -1) {
-    throw new Error(`${fileLabel}: missing closing frontmatter fence`);
-  }
+function parseSpeakersFile(source, fileLabel) {
+  const lines = source.replaceAll("\r\n", "\n").split("\n");
+  const speakers = {};
+  let currentSpeakerId;
 
-  const frontmatterLines = lines.slice(1, closingIndex);
-  const body = lines.slice(closingIndex + 1).join("\n");
-  const data = {};
-
-  for (let index = 0; index < frontmatterLines.length; index += 1) {
-    const line = frontmatterLines[index];
+  for (const line of lines) {
     const trimmedLine = line.trim();
 
     if (!trimmedLine || trimmedLine.startsWith("#")) {
       continue;
     }
 
-    const fieldMatch = /^\s*([A-Za-z][A-Za-z0-9_-]*):(.*)$/.exec(line);
+    const { indent, key, rawValue } = parseKeyValueLine(line, fileLabel);
 
-    if (!fieldMatch) {
-      throw new Error(`${fileLabel}: invalid frontmatter line "${line}"`);
+    if (indent === 0) {
+      if (stripInlineComment(rawValue).trim() !== "") {
+        throw new Error(`${fileLabel}: speaker "${key}" must use nested fields`);
+      }
+
+      if (Object.hasOwn(speakers, key)) {
+        throw new Error(`${fileLabel}: duplicate speakerId "${key}"`);
+      }
+
+      speakers[key] = {};
+      currentSpeakerId = key;
+      continue;
     }
 
-    const [, key, rawValue] = fieldMatch;
+    if (indent !== 2 || !currentSpeakerId) {
+      throw new Error(`${fileLabel}: invalid speaker field indentation`);
+    }
+
+    const speaker = speakers[currentSpeakerId];
+
+    if (Object.hasOwn(speaker, key)) {
+      throw new Error(`${fileLabel}: duplicate field "${key}" for speaker "${currentSpeakerId}"`);
+    }
+
+    speaker[key] = parseScalar(rawValue);
+  }
+
+  return speakers;
+}
+
+function parseConversationFile(source, fileLabel) {
+  const lines = source.replaceAll("\r\n", "\n").split("\n");
+  const data = {};
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index];
+    const trimmedLine = line.trim();
+
+    if (!trimmedLine || trimmedLine.startsWith("#")) {
+      index += 1;
+      continue;
+    }
+
+    const { indent, key, rawValue } = parseKeyValueLine(line, fileLabel);
+
+    if (indent !== 0) {
+      throw new Error(`${fileLabel}: unexpected indentation at top level`);
+    }
 
     if (Object.hasOwn(data, key)) {
-      throw new Error(`${fileLabel}: duplicate frontmatter field "${key}"`);
+      throw new Error(`${fileLabel}: duplicate field "${key}"`);
     }
 
-    if (key === "tags") {
-      const inlineValue = stripInlineComment(rawValue).trim();
+    const inlineValue = stripInlineComment(rawValue).trim();
 
+    if (key === "tags") {
       if (inlineValue === "[]") {
         data.tags = [];
+        index += 1;
         continue;
       }
 
@@ -101,9 +153,10 @@ function parseQuoteFile(source, fileLabel) {
       }
 
       const tags = [];
+      index += 1;
 
-      while (index + 1 < frontmatterLines.length) {
-        const nextLine = frontmatterLines[index + 1];
+      while (index < lines.length) {
+        const nextLine = lines[index];
         const trimmedNextLine = nextLine.trim();
 
         if (!trimmedNextLine || trimmedNextLine.startsWith("#")) {
@@ -111,46 +164,92 @@ function parseQuoteFile(source, fileLabel) {
           continue;
         }
 
-        if (!/^\s*-\s/.test(nextLine)) {
+        const listMatch = /^\s{2}-\s?(.*)$/.exec(nextLine);
+
+        if (!listMatch) {
           break;
         }
 
+        tags.push(parseScalar(listMatch[1]));
         index += 1;
-
-        const itemMatch = /^\s*-\s?(.*)$/.exec(nextLine);
-
-        if (!itemMatch) {
-          throw new Error(`${fileLabel}: invalid tag entry "${nextLine}"`);
-        }
-
-        tags.push(parseScalar(itemMatch[1]));
       }
 
       data.tags = tags;
       continue;
     }
 
-    data[key] = {
-      raw: rawValue.trim(),
-      value: parseScalar(rawValue),
-    };
+    if (key === "messages") {
+      if (inlineValue !== "") {
+        throw new Error(`${fileLabel}: messages must use nested YAML entries`);
+      }
+
+      const messages = [];
+      index += 1;
+
+      while (index < lines.length) {
+        const nextLine = lines[index];
+        const trimmedNextLine = nextLine.trim();
+
+        if (!trimmedNextLine || trimmedNextLine.startsWith("#")) {
+          index += 1;
+          continue;
+        }
+
+        const listMatch = /^\s{2}-\s([A-Za-z][A-Za-z0-9_-]*):(.*)$/.exec(nextLine);
+
+        if (!listMatch) {
+          break;
+        }
+
+        const message = {
+          [listMatch[1]]: parseScalar(listMatch[2]),
+        };
+
+        index += 1;
+
+        while (index < lines.length) {
+          const messageLine = lines[index];
+          const trimmedMessageLine = messageLine.trim();
+
+          if (!trimmedMessageLine || trimmedMessageLine.startsWith("#")) {
+            index += 1;
+            continue;
+          }
+
+          if (/^\s{2}-\s/.test(messageLine)) {
+            break;
+          }
+
+          const parsedField = parseKeyValueLine(messageLine, fileLabel);
+
+          if (parsedField.indent < 4) {
+            break;
+          }
+
+          if (parsedField.indent !== 4) {
+            throw new Error(`${fileLabel}: invalid message field indentation`);
+          }
+
+          if (Object.hasOwn(message, parsedField.key)) {
+            throw new Error(`${fileLabel}: duplicate message field "${parsedField.key}"`);
+          }
+
+          message[parsedField.key] = parseScalar(parsedField.rawValue);
+          index += 1;
+        }
+
+        messages.push(message);
+      }
+
+      data.messages = messages;
+      continue;
+    }
+
+    data[key] = parseScalar(rawValue);
+    index += 1;
   }
 
-  return { body, data };
-}
-
-function getRequiredValue(data, fieldName, fileLabel) {
-  const entry = data[fieldName];
-
-  if (entry === undefined) {
-    throw new Error(`${fileLabel}: missing required field "${fieldName}"`);
-  }
-
-  if (typeof entry === "object" && entry !== null && "value" in entry) {
-    return entry.value;
-  }
-
-  return entry;
+  return data;
 }
 
 function isValidCalendarDate(year, month, day) {
@@ -163,8 +262,8 @@ function isValidCalendarDate(year, month, day) {
   );
 }
 
-function isValidDateValue(time) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(time);
+function isValidDateValue(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
 
   if (!match) {
     return false;
@@ -174,8 +273,8 @@ function isValidDateValue(time) {
   return isValidCalendarDate(Number(year), Number(month), Number(day));
 }
 
-function isValidMinuteValue(time) {
-  const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/.exec(time);
+function isValidMinuteValue(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/.exec(value);
 
   if (!match) {
     return false;
@@ -192,116 +291,208 @@ function isValidMinuteValue(time) {
   return numericHour >= 0 && numericHour <= 23 && numericMinute >= 0 && numericMinute <= 59;
 }
 
-function validateQuoteFile(parsedQuote, fileLabel, seenSlugs) {
-  const { body, data } = parsedQuote;
+function assertNonEmptyString(value, message) {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new Error(message);
+  }
+}
 
-  for (const fieldName of REQUIRED_FIELDS) {
-    if (!Object.hasOwn(data, fieldName)) {
+function validateSpeakers(speakers, fileLabel) {
+  const speakerIds = Object.keys(speakers);
+
+  if (speakerIds.length === 0) {
+    throw new Error(`${fileLabel}: must define at least one speaker`);
+  }
+
+  for (const speakerId of speakerIds) {
+    if (!STABLE_ID_RE.test(speakerId)) {
+      throw new Error(`${fileLabel}: invalid speakerId "${speakerId}"`);
+    }
+
+    const speaker = speakers[speakerId];
+
+    assertNonEmptyString(speaker.name, `${fileLabel}: speaker "${speakerId}" must have a non-empty name`);
+    assertNonEmptyString(
+      speaker.avatar,
+      `${fileLabel}: speaker "${speakerId}" must have a non-empty avatar path`,
+    );
+
+    if (
+      speaker.variant !== undefined &&
+      speaker.variant !== "left" &&
+      speaker.variant !== "right"
+    ) {
+      throw new Error(
+        `${fileLabel}: speaker "${speakerId}" has invalid variant "${speaker.variant}"`,
+      );
+    }
+  }
+}
+
+function validateConversation(conversation, fileLabel, seenSlugs, knownSpeakerIds) {
+  const requiredFields = ["slug", "date", "timePrecision", "source", "tags", "messages"];
+
+  for (const fieldName of requiredFields) {
+    if (!Object.hasOwn(conversation, fieldName)) {
       throw new Error(`${fileLabel}: missing required field "${fieldName}"`);
     }
   }
 
-  const slug = getRequiredValue(data, "slug", fileLabel);
-  const time = getRequiredValue(data, "time", fileLabel);
-  const timePrecision = getRequiredValue(data, "timePrecision", fileLabel);
-  const speaker = getRequiredValue(data, "speaker", fileLabel);
-  const source = getRequiredValue(data, "source", fileLabel);
-  const tags = data.tags;
+  assertNonEmptyString(conversation.slug, `${fileLabel}: slug must be a non-empty string`);
+  assertNonEmptyString(conversation.date, `${fileLabel}: date must be a non-empty string`);
+  assertNonEmptyString(
+    conversation.source,
+    `${fileLabel}: source must be a non-empty string`,
+  );
 
-  if (typeof slug !== "string" || slug.trim() === "") {
-    throw new Error(`${fileLabel}: slug must be a non-empty string`);
+  if (!STABLE_ID_RE.test(conversation.slug)) {
+    throw new Error(`${fileLabel}: slug must be route-safe lowercase letters, numbers, and hyphens`);
   }
 
-  if (!QUOTE_SLUG_RE.test(slug)) {
-    throw new Error(
-      `${fileLabel}: slug must be a lowercase single path segment using only letters, numbers, and hyphens for /q/<slug>/`,
-    );
-  }
-
-  const existingSlugOwner = seenSlugs.get(slug);
+  const existingSlugOwner = seenSlugs.get(conversation.slug);
 
   if (existingSlugOwner) {
     throw new Error(
-      `${fileLabel}: duplicate slug "${slug}" already used by ${existingSlugOwner}`,
+      `${fileLabel}: duplicate slug "${conversation.slug}" already used by ${existingSlugOwner}`,
     );
   }
 
-  seenSlugs.set(slug, fileLabel);
+  seenSlugs.set(conversation.slug, fileLabel);
 
-  if (typeof speaker !== "string" || speaker.trim() === "") {
-    throw new Error(`${fileLabel}: speaker must be a non-empty string`);
+  if (!DATE_RE.test(conversation.date) || !isValidDateValue(conversation.date)) {
+    throw new Error(`${fileLabel}: date must be a real calendar date in YYYY-MM-DD format`);
   }
 
-  if (typeof source !== "string" || source.trim() === "") {
-    throw new Error(`${fileLabel}: source must be a non-empty string`);
+  if (conversation.timePrecision !== "date" && conversation.timePrecision !== "minute") {
+    throw new Error(`${fileLabel}: invalid timePrecision "${conversation.timePrecision}"`);
   }
 
-  if (typeof time !== "string" || time.trim() === "") {
-    throw new Error(`${fileLabel}: time must be a non-empty string`);
-  }
-
-  if (data.time.raw === "" || !/^(".*"|'.*')$/.test(data.time.raw)) {
-    throw new Error(`${fileLabel}: time must be a quoted string`);
-  }
-
-  if (timePrecision !== "date" && timePrecision !== "minute") {
-    throw new Error(`${fileLabel}: invalid timePrecision "${timePrecision}"`);
-  }
-
-  if (timePrecision === "date" && !DATE_RE.test(time)) {
-    throw new Error(`${fileLabel}: time must match YYYY-MM-DD for date precision`);
-  }
-
-  if (timePrecision === "date" && !isValidDateValue(time)) {
-    throw new Error(`${fileLabel}: time must be a real calendar date`);
-  }
-
-  if (timePrecision === "minute" && !MINUTE_RE.test(time)) {
-    throw new Error(
-      `${fileLabel}: time must match YYYY-MM-DD HH:MM for minute precision`,
-    );
-  }
-
-  if (timePrecision === "minute" && !isValidMinuteValue(time)) {
-    throw new Error(`${fileLabel}: time must be a real calendar date and time`);
-  }
-
-  if (!Array.isArray(tags)) {
+  if (!Array.isArray(conversation.tags)) {
     throw new Error(`${fileLabel}: tags must be an array`);
   }
 
-  for (const tag of tags) {
-    if (typeof tag !== "string" || tag.trim() === "") {
-      throw new Error(`${fileLabel}: tags must contain only non-empty strings`);
+  for (const tag of conversation.tags) {
+    assertNonEmptyString(tag, `${fileLabel}: tags must contain only non-empty strings`);
+  }
+
+  if (!Array.isArray(conversation.messages) || conversation.messages.length === 0) {
+    throw new Error(`${fileLabel}: messages must contain at least one entry`);
+  }
+
+  let featuredCount = 0;
+  let featuredMessageDate;
+
+  for (const [index, message] of conversation.messages.entries()) {
+    assertNonEmptyString(
+      message.speakerId,
+      `${fileLabel}: message ${index + 1} must have a non-empty speakerId`,
+    );
+    assertNonEmptyString(
+      message.text,
+      `${fileLabel}: message ${index + 1} must have non-empty text`,
+    );
+    assertNonEmptyString(
+      message.time,
+      `${fileLabel}: message ${index + 1} must have a non-empty time`,
+    );
+
+    if (!knownSpeakerIds.has(message.speakerId)) {
+      throw new Error(
+        `${fileLabel}: message ${index + 1} references unknown speakerId "${message.speakerId}"`,
+      );
+    }
+
+    if (
+      message.featured !== undefined &&
+      typeof message.featured !== "boolean"
+    ) {
+      throw new Error(`${fileLabel}: message ${index + 1} featured must be a boolean`);
+    }
+
+    if (message.featured === true) {
+      featuredCount += 1;
+      featuredMessageDate = message.time.slice(0, 10);
+    }
+
+    if (conversation.timePrecision === "date") {
+      if (!DATE_RE.test(message.time) || !isValidDateValue(message.time)) {
+        throw new Error(
+          `${fileLabel}: message ${index + 1} time must be a real date in YYYY-MM-DD format`,
+        );
+      }
+    } else if (!MINUTE_RE.test(message.time) || !isValidMinuteValue(message.time)) {
+      throw new Error(
+        `${fileLabel}: message ${index + 1} time must be a real date-time in YYYY-MM-DD HH:MM format`,
+      );
     }
   }
 
-  if (body.trim() === "") {
-    throw new Error(`${fileLabel}: quote body must not be empty`);
+  if (featuredCount !== 1) {
+    throw new Error(`${fileLabel}: must have exactly one featured message`);
+  }
+
+  if (conversation.date !== featuredMessageDate) {
+    throw new Error(
+      `${fileLabel}: date "${conversation.date}" must match featured message day "${featuredMessageDate}"`,
+    );
   }
 }
 
-async function getQuoteFiles() {
-  const entries = await readdir(QUOTES_DIR, { withFileTypes: true });
+async function getConversationFiles() {
+  const entries = await readdir(CONVERSATIONS_DIR, { withFileTypes: true });
 
   return entries
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
-    .map((entry) => path.join(QUOTES_DIR, entry.name))
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".yaml"))
+    .map((entry) => path.join(CONVERSATIONS_DIR, entry.name))
+    .sort((left, right) => left.localeCompare(right));
+}
+
+async function getSpeakerFiles() {
+  const entries = await readdir(SPEAKERS_DIR, { withFileTypes: true });
+
+  return entries
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".yaml"))
+    .map((entry) => path.join(SPEAKERS_DIR, entry.name))
     .sort((left, right) => left.localeCompare(right));
 }
 
 async function main() {
-  const files = await getQuoteFiles();
-  const seenSlugs = new Map();
   const errors = [];
+  let speakers = {};
+  const conversationFiles = await getConversationFiles();
+  const speakerFiles = await getSpeakerFiles();
 
-  for (const filePath of files) {
+  try {
+    for (const filePath of speakerFiles) {
+      const fileLabel = path.relative(process.cwd(), filePath) || filePath;
+      const speakersSource = await readFile(filePath, "utf8");
+      const parsedSpeakers = parseSpeakersFile(speakersSource, fileLabel);
+
+      validateSpeakers(parsedSpeakers, fileLabel);
+
+      for (const [speakerId, speaker] of Object.entries(parsedSpeakers)) {
+        if (Object.hasOwn(speakers, speakerId)) {
+          throw new Error(`${fileLabel}: duplicate speakerId "${speakerId}" across speakers files`);
+        }
+
+        speakers[speakerId] = speaker;
+      }
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    errors.push(message);
+  }
+
+  const knownSpeakerIds = new Set(Object.keys(speakers));
+  const seenSlugs = new Map();
+
+  for (const filePath of conversationFiles) {
     const fileLabel = path.relative(process.cwd(), filePath) || filePath;
 
     try {
       const source = await readFile(filePath, "utf8");
-      const parsedQuote = parseQuoteFile(source, fileLabel);
-      validateQuoteFile(parsedQuote, fileLabel, seenSlugs);
+      const conversation = parseConversationFile(source, fileLabel);
+      validateConversation(conversation, fileLabel, seenSlugs, knownSpeakerIds);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       errors.push(message);
@@ -317,7 +508,9 @@ async function main() {
     return;
   }
 
-  console.log(`Validated ${files.length} quote files.`);
+  console.log(
+    `Validated ${conversationFiles.length} conversation files and ${knownSpeakerIds.size} speakers.`,
+  );
 }
 
 await main();

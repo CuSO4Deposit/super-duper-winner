@@ -1,11 +1,14 @@
 ---
-import QuoteList from "../components/QuoteList.astro";
+import FeaturedConversationCard from "../components/FeaturedConversationCard.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { getAllQuotes, groupQuotesByDay } from "../lib/quotes";
+import {
+  getAllFeaturedConversations,
+  groupFeaturedConversationsByDay,
+} from "../lib/conversations";
 
-const quotes = await getAllQuotes();
-const groups = groupQuotesByDay(quotes);
+const conversations = await getAllFeaturedConversations();
+const groups = groupFeaturedConversationsByDay(conversations);
 ---
 
 <BaseLayout title="Quotations">
@@ -15,11 +18,27 @@ const groups = groupQuotesByDay(quotes);
     <section class="intro" aria-labelledby="homepage-title">
       <h1 class="intro-title" id="homepage-title">Recent quotations</h1>
       <p class="intro-copy">
-        A quiet archive of remembered lines, grouped day by day with the
+        Featured lines from conversation threads, grouped day by day with the
         newest first.
       </p>
     </section>
 
-    <QuoteList groups={groups} />
+    <div class="quote-groups">
+      {groups.map((group) => (
+        <section class="quote-group" aria-labelledby={`quote-group-${group.key}`}>
+          <h2 class="group-heading" id={`quote-group-${group.key}`}>
+            {group.label}
+          </h2>
+
+          <ul class="group-items">
+            {group.conversations.map((conversation) => (
+              <li class="group-item">
+                <FeaturedConversationCard conversation={conversation} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
   </div>
 </BaseLayout>
