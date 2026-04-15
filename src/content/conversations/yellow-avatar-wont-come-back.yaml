@@ -1,0 +1,13 @@
+slug: yellow-avatar-wont-come-back
+date: "2026-01-01"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - return
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2026-01-01 02:39"
+    text: "只想着回去了，没想着回来。我知道四号有会，但是没打算回来。"
+    featured: true

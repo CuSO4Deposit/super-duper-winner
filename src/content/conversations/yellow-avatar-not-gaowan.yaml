@@ -1,0 +1,13 @@
+slug: yellow-avatar-not-gaowan
+date: "2026-04-11"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - statement
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2026-04-11 00:06"
+    text: "我没 gao3wan2。"
+    featured: true

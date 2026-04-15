@@ -1,0 +1,13 @@
+slug: yellow-avatar-takeoff-hour
+date: "2025-12-08"
+timePrecision: date
+source: Chat log
+tags:
+  - yellow-avatar
+  - warning
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2025-12-08"
+    text: "起飞要一个小时，警钟长鸣！"
+    featured: true

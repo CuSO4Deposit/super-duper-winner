@@ -1,0 +1,13 @@
+slug: yellow-avatar-big-brother
+date: "2025-12-30"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - declaration
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2025-12-30 21:46"
+    text: "明天 wwdc 师兄一走，科学组就没有大哥了，那大哥的位置必然是我的。"
+    featured: true

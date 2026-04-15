@@ -1,0 +1,17 @@
+slug: yellow-avatar-gaoji
+date: "2025-12-22"
+timePrecision: date
+source: Chat log
+tags:
+  - yellow-avatar
+  - banter
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2025-12-22"
+    text: "去搞基吗。"
+    featured: true
+
+  - speakerId: yellow-avatar
+    time: "2025-12-22"
+    text: "（已搞基）"

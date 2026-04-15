@@ -1,0 +1,13 @@
+slug: yellow-avatar-not-from-lab
+date: "2025-12-21"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - lab
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2025-12-21 19:21"
+    text: "我不是实验室的人。"
+    featured: true

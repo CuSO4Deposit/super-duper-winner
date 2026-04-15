@@ -1,0 +1,17 @@
+slug: yellow-avatar-honey-water
+date: "2026-01-01"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - kitchen
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2026-01-01 05:16"
+    text: "蜂蜜水需要 30 度的水，这个 100 度的会把我这个小烧杯刷坏。"
+
+  - speakerId: yellow-avatar
+    time: "2026-01-01 05:16"
+    text: "更新：蜂蜜水需要 30 度的水，这个 100 度的会把我这个小烧杯烧坏。"
+    featured: true

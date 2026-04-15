@@ -1,0 +1,13 @@
+slug: yellow-avatar-113-54s
+date: "2025-12-18"
+timePrecision: date
+source: Chat log
+tags:
+  - yellow-avatar
+  - problem-solving
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2025-12-18"
+    text: "题目用了 113.54s，做了三分钟。"
+    featured: true

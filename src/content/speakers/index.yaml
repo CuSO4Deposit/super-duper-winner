@@ -7,3 +7,33 @@ aya:
   name: Aya
   avatar: /avatars/aya.svg
   variant: right
+
+yellow-avatar:
+  name: 黄头像的
+  avatar: /avatars/yellow-avatar.jpg
+  variant: left
+
+yellow-hair:
+  name: 黄毛
+  avatar: /avatars/neutral-avatar.svg
+  variant: right
+
+neo:
+  name: 鸟人
+  avatar: /avatars/neutral-avatar.svg
+  variant: left
+
+white-clothes:
+  name: 白衣服的
+  avatar: /avatars/neutral-avatar.svg
+  variant: right
+
+big-hand:
+  name: 大手
+  avatar: /avatars/neutral-avatar.svg
+  variant: right
+
+the-tall:
+  name: 高人
+  avatar: /avatars/neutral-avatar.svg
+  variant: left

@@ -1,0 +1,21 @@
+slug: yellow-avatar-grossed-out-senior
+date: "2026-03-05"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - senior
+
+messages:
+  - speakerId: white-clothes
+    time: "2026-03-05 12:06"
+    text: "2026 年 03 月 05 日 12:06，黄头像的声明：看来我昨天恶心黄毛师兄是对的。"
+    featured: true
+
+  - speakerId: yellow-avatar
+    time: "2026-03-05 12:06"
+    text: "原情景是：子诚说师兄要请假，测试平台不好接，我说：你意思是师兄公共化做得不好，没他在就用不了是吧。"
+
+  - speakerId: white-clothes
+    time: "2026-03-05 12:06"
+    text: "说出了多少黄头像的心声👍👍"

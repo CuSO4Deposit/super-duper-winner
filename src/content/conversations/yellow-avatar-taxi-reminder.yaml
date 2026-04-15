@@ -1,0 +1,13 @@
+slug: yellow-avatar-taxi-reminder
+date: "2025-12-20"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - reminder
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2025-12-20 12:54"
+    text: "让那个小 wwdc 好好打车啊。"
+    featured: true
