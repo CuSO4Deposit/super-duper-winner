@@ -1,0 +1,21 @@
+slug: yellow-avatar-debug-needs-humanr2
+date: "2026-04-02"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - debugging
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2026-04-02 12:13"
+    text: "debug 为什么需要人参与。"
+
+  - speakerId: yellow-hair
+    time: "2026-04-02 12:13"
+    text: "sb。"
+
+  - speakerId: yellow-avatar
+    time: "2026-04-02 12:23"
+    text: "这死喷子还在喷，我回去就把他踹了。"
+    featured: true
