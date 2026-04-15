@@ -1,0 +1,17 @@
+---
+type Props = {
+  src: string;
+  alt: string;
+  size?: "sm" | "md";
+};
+
+const { src, alt, size = "md" }: Props = Astro.props;
+---
+
+<img
+  class:list={["speaker-avatar", `speaker-avatar-${size}`]}
+  src={src}
+  alt={alt}
+  loading="lazy"
+  decoding="async"
+/>

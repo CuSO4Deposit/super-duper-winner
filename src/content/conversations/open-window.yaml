@@ -1,0 +1,13 @@
+slug: open-window
+date: "2024-05-19"
+timePrecision: date
+source: Notebook
+tags:
+  - home
+  - morning
+
+messages:
+  - speakerId: aya
+    time: "2024-05-19"
+    text: "The room changed first when the window opened."
+    featured: true

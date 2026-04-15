@@ -48,7 +48,7 @@ function buildUtcDate(
   return parsed;
 }
 
-export function parseQuoteTime(time: string, precision: TimePrecision): Date {
+export function parseTime(time: string, precision: TimePrecision): Date {
   if (precision === "date") {
     const match = DATE_RE.exec(time);
 
@@ -84,12 +84,20 @@ export function parseQuoteTime(time: string, precision: TimePrecision): Date {
   );
 }
 
-export function formatQuoteTime(time: string, precision: TimePrecision): string {
-  const parsed = parseQuoteTime(time, precision);
+export function formatTime(time: string, precision: TimePrecision): string {
+  const parsed = parseTime(time, precision);
 
   if (precision === "date") {
     return DATE_FORMATTER.format(parsed);
   }
 
   return MINUTE_FORMATTER.format(parsed);
+}
+
+export function parseQuoteTime(time: string, precision: TimePrecision): Date {
+  return parseTime(time, precision);
+}
+
+export function formatQuoteTime(time: string, precision: TimePrecision): string {
+  return formatTime(time, precision);
 }
