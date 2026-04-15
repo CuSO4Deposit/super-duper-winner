@@ -1,0 +1,12 @@
+slug: yellow-avatar-fails-wwdc
+date: "2026-04-15"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2026-04-15 20:48"
+    text: "明天告诉 wwdc，虽然你远在天边，但是催眠我已经做了，你可以走人了。"
+    featured: true
