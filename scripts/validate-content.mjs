@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const CONTENT_DIR = fileURLToPath(new URL("../src/content/", import.meta.url));
 const CONVERSATIONS_DIR = path.join(CONTENT_DIR, "conversations");
-const SPEAKERS_FILE = path.join(CONTENT_DIR, "speakers", "index.yaml");
+const SPEAKERS_DIR = path.join(CONTENT_DIR, "speakers");
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MINUTE_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
@@ -380,6 +380,7 @@ function validateConversation(conversation, fileLabel, seenSlugs, knownSpeakerId
   }
 
   let featuredCount = 0;
+  let featuredMessageDate;
 
   for (const [index, message] of conversation.messages.entries()) {
     assertNonEmptyString(
@@ -410,6 +411,7 @@ function validateConversation(conversation, fileLabel, seenSlugs, knownSpeakerId
 
     if (message.featured === true) {
       featuredCount += 1;
+      featuredMessageDate = message.time.slice(0, 10);
     }
 
     if (conversation.timePrecision === "date") {
@@ -428,6 +430,12 @@ function validateConversation(conversation, fileLabel, seenSlugs, knownSpeakerId
   if (featuredCount !== 1) {
     throw new Error(`${fileLabel}: must have exactly one featured message`);
   }
+
+  if (conversation.date !== featuredMessageDate) {
+    throw new Error(
+      `${fileLabel}: date "${conversation.date}" must match featured message day "${featuredMessageDate}"`,
+    );
+  }
 }
 
 async function getConversationFiles() {
@@ -439,15 +447,37 @@ async function getConversationFiles() {
     .sort((left, right) => left.localeCompare(right));
 }
 
+async function getSpeakerFiles() {
+  const entries = await readdir(SPEAKERS_DIR, { withFileTypes: true });
+
+  return entries
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".yaml"))
+    .map((entry) => path.join(SPEAKERS_DIR, entry.name))
+    .sort((left, right) => left.localeCompare(right));
+}
+
 async function main() {
   const errors = [];
   let speakers = {};
   const conversationFiles = await getConversationFiles();
+  const speakerFiles = await getSpeakerFiles();
 
   try {
-    const speakersSource = await readFile(SPEAKERS_FILE, "utf8");
-    speakers = parseSpeakersFile(speakersSource, path.relative(process.cwd(), SPEAKERS_FILE));
-    validateSpeakers(speakers, path.relative(process.cwd(), SPEAKERS_FILE));
+    for (const filePath of speakerFiles) {
+      const fileLabel = path.relative(process.cwd(), filePath) || filePath;
+      const speakersSource = await readFile(filePath, "utf8");
+      const parsedSpeakers = parseSpeakersFile(speakersSource, fileLabel);
+
+      validateSpeakers(parsedSpeakers, fileLabel);
+
+      for (const [speakerId, speaker] of Object.entries(parsedSpeakers)) {
+        if (Object.hasOwn(speakers, speakerId)) {
+          throw new Error(`${fileLabel}: duplicate speakerId "${speakerId}" across speakers files`);
+        }
+
+        speakers[speakerId] = speaker;
+      }
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     errors.push(message);

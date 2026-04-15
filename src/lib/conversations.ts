@@ -215,6 +215,13 @@ async function loadConversations(): Promise<ConversationRecord[]> {
         ),
       );
       const featuredMessage = getFeaturedMessage(entry.data.slug, messages);
+      const featuredMessageDate = featuredMessage.time.slice(0, 10);
+
+      if (entry.data.date !== featuredMessageDate) {
+        throw new Error(
+          `Conversation "${entry.data.slug}" date "${entry.data.date}" must match featured message day "${featuredMessageDate}".`,
+        );
+      }
 
       return {
         id: entry.id,
