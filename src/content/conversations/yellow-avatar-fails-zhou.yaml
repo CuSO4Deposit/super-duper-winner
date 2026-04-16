@@ -1,0 +1,12 @@
+slug: yellow-avatar-fails-zhou
+date: "2026-04-16"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2026-04-16 19:27"
+    text: "……王要把周推翻。"
+    featured: true
