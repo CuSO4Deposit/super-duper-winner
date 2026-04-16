@@ -189,14 +189,17 @@ ol {
   box-shadow: 0 16px 40px rgba(67, 49, 36, 0.05);
 }
 
-.featured-card-link {
+.featured-card-main {
   display: grid;
   gap: 0.7rem;
+}
+
+.featured-card-primary-link {
   text-decoration: none;
 }
 
-.featured-card-link:hover .featured-card-body,
-.featured-card-link:focus-visible .featured-card-body {
+.featured-card-primary-link:hover + .featured-card-body,
+.featured-card-primary-link:focus-visible + .featured-card-body {
   color: color-mix(in srgb, var(--text) 82%, var(--accent));
 }
 
@@ -236,6 +239,7 @@ ol {
 
 .featured-card-link-label {
   color: var(--accent);
+  display: inline-flex;
   font-size: 0.76rem;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -398,6 +402,65 @@ ol {
 .conversation-message-text {
   font-size: 1rem;
   line-height: 1.6;
+}
+
+.spoiler-token {
+  --spoiler-cover: #111;
+  display: inline-block;
+  padding: 0;
+  border: 0;
+  position: relative;
+  background: transparent;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  border-radius: 0;
+  cursor: pointer;
+  font: inherit;
+  line-height: inherit;
+  vertical-align: baseline;
+  user-select: none;
+  caret-color: transparent;
+  isolation: isolate;
+  transition:
+    opacity 140ms ease,
+    color 140ms ease;
+}
+
+.spoiler-token-text {
+  pointer-events: none;
+}
+
+.spoiler-token::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--spoiler-cover);
+  pointer-events: none;
+  transition:
+    opacity 140ms ease,
+    background-color 140ms ease;
+}
+
+.spoiler-token:hover,
+.spoiler-token:focus,
+.spoiler-token:focus-visible,
+.spoiler-token.is-revealed {
+  color: inherit;
+  -webkit-text-fill-color: currentColor;
+  user-select: text;
+  caret-color: auto;
+}
+
+.spoiler-token:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 72%, white);
+  outline-offset: 0.1rem;
+}
+
+.spoiler-token:hover::after,
+.spoiler-token:focus::after,
+.spoiler-token:focus-visible::after,
+.spoiler-token.is-revealed::after {
+  opacity: 0;
 }
 
 .conversation-message-time {

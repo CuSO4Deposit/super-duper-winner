@@ -5,6 +5,7 @@ import {
 } from "../lib/conversations";
 
 import ConversationMessage from "./ConversationMessage.astro";
+import InlineSpoilerText from "./InlineSpoilerText.astro";
 
 type Props = {
   conversation: ConversationThreadRecord;
@@ -17,7 +18,9 @@ const { conversation }: Props = Astro.props;
   <header class="thread-header">
     <div class="thread-header-copy">
       <p class="thread-kicker">Conversation</p>
-      <h1 class="thread-title">{conversation.featuredMessage.text}</h1>
+      <h1 class="thread-title">
+        <InlineSpoilerText text={conversation.featuredMessage.text} />
+      </h1>
       <p class="thread-subtitle">
         <time datetime={conversation.featuredMessage.time}>
           {conversation.featuredMessage.renderedTime}

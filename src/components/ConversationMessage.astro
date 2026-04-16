@@ -1,6 +1,7 @@
 ---
 import type { ConversationMessageRecord } from "../lib/conversations";
 
+import InlineSpoilerText from "./InlineSpoilerText.astro";
 import SpeakerAvatar from "./SpeakerAvatar.astro";
 
 type Props = {
@@ -28,7 +29,9 @@ const isRight = message.speaker.variant === "right";
       {message.featured && <span class="conversation-featured-flag">Featured</span>}
     </header>
 
-    <p class="conversation-message-text">{message.text}</p>
+    <p class="conversation-message-text">
+      <InlineSpoilerText text={message.text} />
+    </p>
 
     <time class="conversation-message-time" datetime={message.time}>
       {message.renderedTime}

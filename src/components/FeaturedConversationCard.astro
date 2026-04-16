@@ -6,6 +6,7 @@ import {
 } from "../lib/conversations";
 
 import SpeakerAvatar from "./SpeakerAvatar.astro";
+import InlineSpoilerText from "./InlineSpoilerText.astro";
 
 type Props = {
   conversation: FeaturedConversationRecord;
@@ -16,22 +17,26 @@ const { featuredMessage } = conversation;
 ---
 
 <article class="featured-card">
-  <a class="featured-card-link" href={getConversationPath(conversation.slug)}>
-    <div class="featured-card-speaker">
+  <div class="featured-card-main">
+    <a class="featured-card-speaker featured-card-primary-link" href={getConversationPath(conversation.slug)}>
       <SpeakerAvatar
         src={featuredMessage.speaker.avatar}
         alt={featuredMessage.speaker.name}
         size="sm"
       />
       <span class="featured-card-name">{featuredMessage.speaker.name}</span>
-    </div>
+    </a>
 
     <blockquote class="featured-card-body">
-      <p>{featuredMessage.text}</p>
+      <p>
+        <InlineSpoilerText text={featuredMessage.text} />
+      </p>
     </blockquote>
 
-    <span class="featured-card-link-label" aria-hidden="true">Open thread</span>
-  </a>
+    <a class="featured-card-link-label featured-card-primary-link" href={getConversationPath(conversation.slug)}>
+      Open thread
+    </a>
+  </div>
 
   <div class="featured-card-meta">
     <p class="featured-card-meta-line">
