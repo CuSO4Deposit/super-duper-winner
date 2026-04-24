@@ -18,8 +18,8 @@ yellow-hair:
   avatar: /avatars/neutral-avatar.svg
   variant: right
 
-neo:
-  name: 鸟人
+parrot-avatar:
+  name: 鹦鹉头像的
   avatar: /avatars/neutral-avatar.svg
   variant: left
 
