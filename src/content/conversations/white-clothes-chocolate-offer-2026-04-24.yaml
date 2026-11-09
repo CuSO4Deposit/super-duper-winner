@@ -1,0 +1,16 @@
+slug: white-clothes-chocolate-offer-2026-04-24
+date: "2026-04-24"
+timePrecision: minute
+source: Chat log
+tags:
+  - white-clothes
+  - yellow-avatar
+
+messages:
+  - speakerId: white-clothes
+    time: "2026-04-24 20:56"
+    text: "黄头像的你要吃巧克力吗"
+  - speakerId: yellow-avatar
+    time: "2026-04-24 20:56"
+    text: "我不吃巧克力，狗不能吃巧克力。"
+    featured: true

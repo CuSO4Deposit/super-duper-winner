@@ -1,0 +1,8 @@
+node_modules
+dist
+.astro
+.superpowers
+.env*
+*.log
+.DS_Store
+.xdg/

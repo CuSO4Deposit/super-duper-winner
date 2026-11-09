@@ -1,0 +1,13 @@
+slug: yellow-avatar-crab-taste
+date: "2026-01-04"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - food
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2026-01-04 13:04"
+    text: "不吃蟹的没品。请大家自行对号入座！"
+    featured: true

@@ -1,0 +1,13 @@
+slug: yellow-avatar-fail-all-seniors
+date: "2025-12-31"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - declaration
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2025-12-31 21:13"
+    text: "我要把所有师兄都 fail 了。"
+    featured: true

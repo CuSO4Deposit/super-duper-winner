@@ -1,0 +1,13 @@
+slug: bh-knows-most
+date: "2025-12-31"
+timePrecision: minute
+source: Chat log
+tags:
+  - big-hand
+  - yellow-avatar
+
+messages:
+  - speakerId: big-hand
+    time: "2025-12-31 22:28"
+    text: "黄色头像是实验室里知道事情最多的。"
+    featured: true

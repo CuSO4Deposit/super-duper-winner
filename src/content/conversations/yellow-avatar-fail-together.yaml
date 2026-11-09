@@ -1,0 +1,13 @@
+slug: yellow-avatar-fail-together
+date: "2025-12-31"
+timePrecision: date
+source: Chat log
+tags:
+  - yellow-avatar
+  - declaration
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2025-12-31"
+    text: "如果我的 fail 能带来所有师兄的 fail，那我还是很开心的。"
+    featured: true

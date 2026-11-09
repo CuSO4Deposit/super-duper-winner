@@ -1,0 +1,13 @@
+slug: yellow-avatar-delayed-graduation
+date: "2026-01-01"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - declaration
+
+messages:
+  - speakerId: the-tall
+    time: "2026-01-01 00:25"
+    text: "2026 年 01 月 01 日 0 时 25 分，黄头像的严正声明：他延毕。备注：史官今天加班"
+    featured: true

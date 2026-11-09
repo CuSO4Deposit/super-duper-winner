@@ -1,0 +1,16 @@
+slug: yellow-avatar-credit-claim
+date: "2025-12-26"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - declaration
+
+messages:
+  - speakerId: white-clothes
+    time: "2025-12-26 00:10"
+    text: "某黄头像的郑重声明：实验室所有的产出全都是他的功劳。另：你们也许可以把他踩在脚下，但是所有的成果都不能绕过他。"
+    featured: true
+  - speakerId: white-clothes
+    time: "2025-12-26 00:10"
+    text: "注：以上两点都是他的功劳。"

@@ -1,0 +1,18 @@
+{
+  "name": "yellow-avatar-quotations",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@10.9.7",
+  "scripts": {
+    "dev": "XDG_CONFIG_HOME=.xdg/config XDG_CACHE_HOME=.xdg/cache XDG_DATA_HOME=.xdg/data ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "build": "XDG_CONFIG_HOME=.xdg/config XDG_CACHE_HOME=.xdg/cache XDG_DATA_HOME=.xdg/data ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "XDG_CONFIG_HOME=.xdg/config XDG_CACHE_HOME=.xdg/cache XDG_DATA_HOME=.xdg/data ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "check": "XDG_CONFIG_HOME=.xdg/config XDG_CACHE_HOME=.xdg/cache XDG_DATA_HOME=.xdg/data ASTRO_TELEMETRY_DISABLED=1 astro check",
+    "validate:content": "node scripts/validate-content.mjs"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.8",
+    "astro": "^5.0.0",
+    "typescript": "^5.9.3"
+  }
+}

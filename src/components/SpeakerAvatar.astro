@@ -1,0 +1,39 @@
+---
+type Props = {
+  src: string;
+  alt: string;
+  size?: "sm" | "md";
+};
+
+const { src, alt, size = "md" }: Props = Astro.props;
+
+function withBasePath(pathname: string): string {
+  if (!pathname.startsWith("/")) {
+    return pathname;
+  }
+
+  const baseUrl = import.meta.env.BASE_URL;
+
+  if (baseUrl === "/") {
+    return pathname;
+  }
+
+  const normalizedBaseUrl = `/${baseUrl.replace(/^\/+|\/+$/g, "")}`;
+
+  if (pathname.startsWith(`${normalizedBaseUrl}/`)) {
+    return pathname;
+  }
+
+  return `${normalizedBaseUrl}${pathname}`;
+}
+
+const resolvedSrc = withBasePath(src);
+---
+
+<img
+  class:list={["speaker-avatar", `speaker-avatar-${size}`]}
+  src={resolvedSrc}
+  alt={alt}
+  loading="lazy"
+  decoding="async"
+/>

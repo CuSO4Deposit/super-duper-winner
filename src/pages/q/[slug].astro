@@ -1,0 +1,46 @@
+---
+import ConversationThread from "../../components/ConversationThread.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  getAllFeaturedConversations,
+  getConversationBySlug,
+  getHomePath,
+  type ConversationThreadRecord,
+} from "../../lib/conversations";
+
+export async function getStaticPaths() {
+  const conversations = await getAllFeaturedConversations();
+
+  return conversations.map((conversation) => ({
+    params: { slug: conversation.slug },
+  }));
+}
+
+const slug = Astro.params.slug;
+
+if (!slug) {
+  throw new Error("Missing conversation slug.");
+}
+
+const conversation = await getConversationBySlug(slug);
+
+if (!conversation) {
+  throw new Error(`Unknown conversation slug: ${slug}`);
+}
+
+const typedConversation: ConversationThreadRecord = conversation;
+const pageTitle = `${typedConversation.featuredMessage.speaker.name} | Quotations`;
+---
+
+<BaseLayout title={pageTitle}>
+  <div class="page-shell page-shell-detail detail-page">
+    <SiteHeader />
+
+    <ConversationThread conversation={typedConversation} />
+
+    <p class="detail-back">
+      <a href={getHomePath()}>Back to archive</a>
+    </p>
+  </div>
+</BaseLayout>

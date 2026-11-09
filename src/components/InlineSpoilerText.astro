@@ -1,0 +1,68 @@
+---
+import { parseSpoilerText } from "../lib/spoilers";
+
+type Props = {
+  text: string;
+};
+
+const { text }: Props = Astro.props;
+const segments = parseSpoilerText(text);
+---
+
+{
+  segments.map((segment) =>
+    segment.type === "spoiler" ? (
+      <button
+        type="button"
+        class="spoiler-token"
+        data-spoiler
+        aria-label="Spoiler. Activate to reveal."
+        aria-pressed="false"
+      >
+        <span class="spoiler-token-text">{segment.value}</span>
+      </button>
+    ) : (
+      segment.value
+    ),
+  )
+}
+
+<script>
+  const spoilerButtons = document.querySelectorAll("[data-spoiler]");
+
+  function hideSpoiler(button: Element) {
+    button.classList.remove("is-revealed");
+    button.setAttribute("aria-pressed", "false");
+  }
+
+  function toggleSpoiler(button: HTMLButtonElement) {
+    const shouldReveal = !button.classList.contains("is-revealed");
+
+    spoilerButtons.forEach((candidate) => {
+      if (candidate !== button) {
+        hideSpoiler(candidate);
+      }
+    });
+
+    button.classList.toggle("is-revealed", shouldReveal);
+    button.setAttribute("aria-pressed", shouldReveal ? "true" : "false");
+  }
+
+  document.addEventListener("click", (event) => {
+    const spoiler = event.target instanceof Element
+      ? event.target.closest("[data-spoiler]")
+      : null;
+
+    if (spoiler instanceof HTMLButtonElement) {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleSpoiler(spoiler);
+      spoiler.focus({ preventScroll: true });
+      return;
+    }
+
+    spoilerButtons.forEach((button) => {
+      hideSpoiler(button);
+    });
+  });
+</script>

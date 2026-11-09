@@ -1,0 +1,13 @@
+slug: yellow-avatar-report-promise
+date: "2025-12-26"
+timePrecision: minute
+source: Chat log
+tags:
+  - yellow-avatar
+  - promise
+
+messages:
+  - speakerId: yellow-avatar
+    time: "2025-12-26 00:15"
+    text: "我明天肯定帮 zzda 写报告。"
+    featured: true

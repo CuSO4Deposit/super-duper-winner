@@ -1,0 +1,66 @@
+---
+import FeaturedConversationCard from "../../components/FeaturedConversationCard.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  getAllTags,
+  getTagArchiveByRouteParam,
+  getTagRouteParam,
+  groupFeaturedConversationsByDay,
+} from "../../lib/conversations";
+
+export async function getStaticPaths() {
+  const tags = await getAllTags();
+
+  return tags.map(({ tag }) => ({
+    params: { tag: getTagRouteParam(tag) },
+  }));
+}
+
+const tagParam = Astro.params.tag;
+
+if (!tagParam) {
+  throw new Error("Missing tag route param.");
+}
+
+const archive = await getTagArchiveByRouteParam(tagParam);
+
+if (!archive) {
+  throw new Error(`Unknown tag route param: ${tagParam}`);
+}
+
+const groups = groupFeaturedConversationsByDay(archive.conversations);
+const pageTitle = `#${archive.tag} | Quotations`;
+const entryLabel = `${archive.count} ${archive.count === 1 ? "entry" : "entries"}`;
+---
+
+<BaseLayout title={pageTitle}>
+  <div class="page-shell">
+    <SiteHeader />
+
+    <section class="tag-page-header" aria-labelledby="tag-page-title">
+      <h1 class="tag-page-title" id="tag-page-title">
+        #{archive.tag}
+      </h1>
+      <p class="tag-page-count">{entryLabel}</p>
+    </section>
+
+    <div class="quote-groups">
+      {groups.map((group) => (
+        <section class="quote-group" aria-labelledby={`quote-group-${group.key}`}>
+          <h2 class="group-heading" id={`quote-group-${group.key}`}>
+            {group.label}
+          </h2>
+
+          <ul class="group-items">
+            {group.conversations.map((conversation) => (
+              <li class="group-item">
+                <FeaturedConversationCard conversation={conversation} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
